@@ -1,0 +1,455 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CTPMarketAdapter</name>
+    </assembly>
+    <members>
+        <member name="T:CTPMarketAdapter.Adapter.MarketAdapter">
+            <summary>
+            CTP行情适配器
+            </summary>
+        </member>
+        <member name="F:CTPMarketAdapter.Adapter.MarketAdapter._api">
+            <summary>
+            行情接口类实例
+            </summary>
+        </member>
+        <member name="F:CTPMarketAdapter.Adapter.MarketAdapter._dataDict">
+            <summary>
+            回调方法字典
+            </summary>
+        </member>
+        <member name="F:CTPMarketAdapter.Adapter.MarketAdapter._dataCallbackDict">
+            <summary>
+            数据回调字典
+            </summary>
+        </member>
+        <member name="F:CTPMarketAdapter.Adapter.MarketAdapter._requestID">
+            <summary>
+            请求编号
+            </summary>
+        </member>
+        <member name="F:CTPMarketAdapter.Adapter.MarketAdapter._isConnected">
+            <summary>
+            是否已连接
+            </summary>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.#ctor">
+            <summary>
+            创建CTP行情适配器
+            </summary>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.#ctor(System.String)">
+            <summary>
+            创建CTP行情适配器
+            </summary>
+            <param name="flowPath">存储订阅信息文件的目录</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.BindEvents">
+            <summary>
+            绑定事件
+            </summary>
+        </member>
+        <member name="E:CTPMarketAdapter.Adapter.MarketAdapter.OnMarketDataChanged">
+            <summary>
+            行情数据改变事件
+            </summary>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.Connect(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="callback">连接服务器回调</param>
+            <param name="brokerID">经纪商代码</param>
+            <param name="frontAddress">前置服务器地址，tcp://IP:Port</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.Disconnect(CTPCore.DataCallback)">
+            <summary>
+            断开连接
+            </summary>
+            <param name="callback">断开连接回调</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.UserLogin(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            用户登录
+            </summary>
+            <param name="callback">登录回调</param>
+            <param name="investorID">投资者账号</param>
+            <param name="password">密码</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.UserLogout(CTPCore.DataCallback)">
+            <summary>
+            用户登出
+            </summary>
+            <param name="callback">登出回调</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.GetTradingDay">
+            <summary>
+            获取交易日
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.SubscribeMarket(System.String[])">
+            <summary>
+            订阅行情
+            </summary>
+            <param name="instruments">合约列表，传空订阅所有</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.UnsubscribeMarket(System.String[])">
+            <summary>
+            退订行情
+            </summary>
+            <param name="instruments">合约列表，传空退订所有</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.GetRequestID">
+            <summary>
+            获取请求ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.AddCallback(System.Object,System.Int32)">
+            <summary>
+            添加回调方法
+            </summary>
+            <param name="callback">回调函数</param>
+            <param name="requestID">请求编号</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.ExecuteCallback(System.Int32,CTPCore.DataResult)">
+            <summary>
+            执行回调方法
+            </summary>
+            <param name="requestID">请求编号</param>
+            <param name="dataResult">返回结果</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.SetError(CTPCore.DataResult,CTPMarketApi.CThostFtdcRspInfoField)">
+            <summary>
+            设置错误信息
+            </summary>
+            <param name="result">返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnRspError(CTPMarketApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            错误回调
+            </summary>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnFrontConnected">
+            <summary>
+            连接成功回调
+            </summary>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnFrontDisconnected(System.Int32)">
+            <summary>
+            断开连接回调
+            </summary>
+            <param name="nReason">原因</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnRspUserLogin(CTPMarketApi.CThostFtdcRspUserLoginField@,CTPMarketApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            登录回调
+            </summary>
+            <param name="pRspUserLogin">登录返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnRspUserLogout(CTPMarketApi.CThostFtdcUserLogoutField@,CTPMarketApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            登出回调
+            </summary>
+            <param name="pUserLogout">登出返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.OnRtnDepthMarketData(CTPMarketApi.CThostFtdcDepthMarketDataField@)">
+            <summary>
+            行情数据回调
+            </summary>
+            <param name="pDepthMarketData">深度行情</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Adapter.MarketAdapter.ConvertToDecimal(System.Double)">
+            <summary>
+            将double类型转为decimal类型
+            </summary>
+            <param name="value">数值</param>
+            <returns></returns>
+        </member>
+        <member name="T:CTPMarketAdapter.MarketDataChangedHandler">
+            <summary>
+            行情数据改变委托方法
+            </summary>
+        </member>
+        <member name="T:CTPMarketAdapter.Interface.IMarketApi">
+            <summary>
+            行情接口
+            </summary>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.Connect(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="callback">连接服务器回调</param>
+            <param name="brokerID">经纪商代码</param>
+            <param name="frontAddress">前置服务器地址</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.Disconnect(CTPCore.DataCallback)">
+            <summary>
+            断开连接
+            </summary>
+            <param name="callback">断开连接回调</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.GetTradingDay">
+            <summary>
+            获取交易日
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.UserLogin(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            用户登录
+            </summary>
+            <param name="callback">登录回调</param>
+            <param name="investorID">投资者账号</param>
+            <param name="password">密码</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.UserLogout(CTPCore.DataCallback)">
+            <summary>
+            用户登出
+            </summary>
+            <param name="callback">登出回调</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.SubscribeMarket(System.String[])">
+            <summary>
+            订阅行情
+            </summary>
+            <param name="instruments">合约代码，传空订阅所有</param>
+        </member>
+        <member name="M:CTPMarketAdapter.Interface.IMarketApi.UnsubscribeMarket(System.String[])">
+            <summary>
+            退订行情
+            </summary>
+            <param name="instruments">合约代码，传空退订所有</param>
+        </member>
+        <member name="E:CTPMarketAdapter.Interface.IMarketApi.OnMarketDataChanged">
+            <summary>
+            行情数据改变事件
+            </summary>
+        </member>
+        <member name="T:CTPMarketAdapter.Model.CTPMarketData">
+            <summary>
+            CTP行情数据
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.InstrmentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.LastPrice">
+            <summary>
+            最新价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.PreSettlementPrice">
+            <summary>
+            上次结算价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.PreClosePrice">
+            <summary>
+            昨收价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.PreOpenInterest">
+            <summary>
+            昨持仓量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.OpenPrice">
+            <summary>
+            今开盘价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.HighestPrice">
+            <summary>
+            最高价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.LowestPrice">
+            <summary>
+            最低价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.Volume">
+            <summary>
+            数量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.Turnover">
+            <summary>
+            成交金额
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.OpenInterest">
+            <summary>
+            持仓量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.ClosePrice">
+            <summary>
+            今收盘价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.SettlementPrice">
+            <summary>
+            本次结算价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.UpperLimitPrice">
+            <summary>
+            涨停价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.LowerLimitPrice">
+            <summary>
+            跌停价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidPrice1">
+            <summary>
+            买一价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidVolume1">
+            <summary>
+            买一量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidPrice2">
+            <summary>
+            买二价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidVolume2">
+            <summary>
+            买二量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidPrice3">
+            <summary>
+            买三价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidVolume3">
+            <summary>
+            买三量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidPrice4">
+            <summary>
+            买四价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidVolume4">
+            <summary>
+            买四量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidPrice5">
+            <summary>
+            买五价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.BidVolume5">
+            <summary>
+            买五量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskPrice1">
+            <summary>
+            卖一价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskVolume1">
+            <summary>
+            卖一量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskPrice2">
+            <summary>
+            卖二价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskVolume2">
+            <summary>
+            卖二量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskPrice3">
+            <summary>
+            卖三价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskVolume3">
+            <summary>
+            卖三量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskPrice4">
+            <summary>
+            卖四价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskVolume4">
+            <summary>
+            卖四量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskPrice5">
+            <summary>
+            卖五价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AskVolume5">
+            <summary>
+            卖五量
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AveragePrice">
+            <summary>
+            当日均价
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AdvanceDeclineAmount">
+            <summary>
+            涨跌额
+            </summary>
+        </member>
+        <member name="P:CTPMarketAdapter.Model.CTPMarketData.AdvanceDecline">
+            <summary>
+            涨跌幅
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,2608 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CTPTradeAdapter</name>
+    </assembly>
+    <members>
+        <member name="T:CTPTradeAdapter.Adapter.TradeAdapter">
+            <summary>
+            CTP交易适配器，支持同时调用多个查询接口(利用任务队列解决CTP单个查询1秒限制)
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._api">
+            <summary>
+            交易接口类实例
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._dataDict">
+            <summary>
+            回调方法字典
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._dataCallbackDict">
+            <summary>
+            数据回调字典
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._queryMethodDict">
+            <summary>
+            查询方法字典
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._requestID">
+            <summary>
+            请求编号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._isConnected">
+            <summary>
+            是否已连接
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._queryTime">
+            <summary>
+            上次查询时间
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._executeFailCount">
+            <summary>
+            执行失败次数
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Adapter.TradeAdapter._timer">
+            <summary>
+            查询时间限制定时器
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.#ctor">
+            <summary>
+            创建CTP交易适配器
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.#ctor(System.String)">
+            <summary>
+            创建CTP交易适配器
+            </summary>
+            <param name="flowPath">存储订阅信息文件的目录</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.BindEvents">
+            <summary>
+            绑定事件
+            </summary>
+        </member>
+        <member name="E:CTPTradeAdapter.Adapter.TradeAdapter.OnReturnOrder">
+            <summary>
+            委托回报
+            </summary>
+        </member>
+        <member name="E:CTPTradeAdapter.Adapter.TradeAdapter.OnReturnTrade">
+            <summary>
+            成交回报
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.Connect(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="callback">连接服务器回调</param>
+            <param name="brokerID">经纪商代码</param>
+            <param name="frontAddress">前置服务器地址，tcp://IP:Port</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.Disconnect(CTPCore.DataCallback)">
+            <summary>
+            断开连接
+            </summary>
+            <param name="callback">断开连接回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.UserLogin(CTPCore.DataCallback,System.String,System.String,System.Boolean)">
+            <summary>
+            用户登录
+            </summary>
+            <param name="callback">登录回调</param>
+            <param name="investorID">投资者账号</param>
+            <param name="password">密码</param>
+            <param name="isSafe">是否使用安全接口</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.UserLogout(CTPCore.DataCallback)">
+            <summary>
+            用户登出
+            </summary>
+            <param name="callback">登出回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.GetTradingDay">
+            <summary>
+            获取交易日
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.UpdateUserPassword(CTPCore.DataCallback,System.String,System.String,System.Boolean)">
+            <summary>
+            更新用户口令
+            </summary>
+            <param name="callback">更新回调</param>
+            <param name="oldPassword">原密码</param>
+            <param name="newPassword">新密码</param>
+            <param name="isSafe">是否使用安全接口</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.InsertOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.OrderInfo},CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            报单
+            </summary>
+            <param name="callback">报单回调</param>
+            <param name="parameter">报单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.CancelOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.OrderInfo},CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            撤单
+            </summary>
+            <param name="callback">撤单回调</param>
+            <param name="parameter">撤单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.InsertParkedOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.ParkedOrderInfo},CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            预埋单录入
+            </summary>
+            <param name="callback">报单回调</param>
+            <param name="parameter">预埋单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.CancelParkedOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.ParkedOrderInfo},CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            预埋撤单
+            </summary>
+            <param name="callback">撤单回调</param>
+            <param name="parameter">预埋单撤单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.SettlementInfoConfirm(CTPCore.DataCallback)">
+            <summary>
+            确认结算结果
+            </summary>
+            <param name="callback">结果回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryAccount(CTPCore.DataCallback{CTPTradeAdapter.Model.AccountInfo})">
+            <summary>
+            查询资金账户
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryInvestor(CTPCore.DataCallback{CTPTradeAdapter.Model.InvestorInfo})">
+            <summary>
+            查询投资者
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryPosition(CTPCore.DataListCallback{CTPTradeAdapter.Model.PositionInfo})">
+            <summary>
+            查询持仓
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryOrder(CTPCore.DataListCallback{CTPTradeAdapter.Model.OrderInfo})">
+            <summary>
+            查询当日委托
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryTrade(CTPCore.DataListCallback{CTPTradeAdapter.Model.TradeInfo})">
+            <summary>
+            查询当日成交
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryParkedOrder(CTPCore.DataListCallback{CTPTradeAdapter.Model.ParkedOrderInfo})">
+            <summary>
+            查询预埋单
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryParkedOrderAction(CTPCore.DataListCallback{CTPTradeAdapter.Model.ParkedCanelOrderInfo})">
+            <summary>
+            查询预埋撤单
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryInstrument(CTPCore.DataListCallback{CTPTradeAdapter.Model.InstrumentInfo},System.String)">
+            <summary>
+            查询合约列表
+            </summary>
+            <param name="callback">查询回调</param>
+            <param name="instrumentID">指定合约</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryInvestorPositionDetail(CTPCore.DataListCallback{CTPTradeAdapter.Model.PositionDetailInfo},System.String)">
+            <summary>
+            查询投资者持仓明细
+            </summary>
+            <param name="callback">查询回调</param>
+            <param name="instrumentID">合约代码:不填-查所有</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QueryNotice(CTPCore.DataListCallback{CTPTradeAdapter.Model.NoticeInfo})">
+            <summary>
+            请求查询客户通知
+            </summary>
+            <param name="callback">查询回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QuerySettlementInfo(CTPCore.DataCallback)">
+            <summary>
+            查询结算结果
+            </summary>
+            <param name="callback">查询回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.QuerySettlementInfoConfirm(CTPCore.DataCallback)">
+            <summary>
+            查询结算信息确认
+            </summary>
+            <param name="callback">查询回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.GetRequestID">
+            <summary>
+            获取请求ID
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.AddMethod(System.Int32,System.Action)">
+            <summary>
+            添加查询委托方法
+            </summary>
+            <param name="requestID"></param>
+            <param name="action"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ExecuteMethod(System.Object,System.Timers.ElapsedEventArgs)">
+            <summary>
+            执行委托方法
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.RemoveMethod(System.Int32,System.Int32)">
+            <summary>
+            移除委托方法
+            </summary>
+            <param name="requestID"></param>
+            <param name="ret"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.AddCallback(System.Object,System.Int32)">
+            <summary>
+            添加回调方法
+            </summary>
+            <param name="callback">回调函数</param>
+            <param name="requestID">请求编号</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ExecuteCallback(System.Int32,CTPCore.DataResult)">
+            <summary>
+            执行回调方法
+            </summary>
+            <param name="requestID">请求编号</param>
+            <param name="dataResult">返回结果</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ExecuteCallback``1(System.Int32,CTPCore.DataResult{``0})">
+            <summary>
+            执行回调方法
+            </summary>
+            <typeparam name="T">结果对象类型</typeparam>
+            <param name="requestID">请求编号</param>
+            <param name="dataResult">返回结果</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ExecuteCallback``1(System.Int32,CTPCore.DataListResult{``0})">
+            <summary>
+            执行集合回调方法
+            </summary>
+            <typeparam name="T">结果列表对象类型</typeparam>
+            <param name="requestID">请求编号</param>
+            <param name="dataResult">返回列表结果</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.SetError(CTPCore.DataResult,CTPTradeApi.CThostFtdcRspInfoField)">
+            <summary>
+            设置错误信息
+            </summary>
+            <param name="result">返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.SetError``1(CTPCore.DataResult{``0},CTPTradeApi.CThostFtdcRspInfoField)">
+            <summary>
+            设置错误信息
+            </summary>
+            <typeparam name="T">结果对象类型</typeparam>
+            <param name="result">返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.SetError``1(CTPCore.DataListResult{``0},CTPTradeApi.CThostFtdcRspInfoField)">
+            <summary>
+            设置错误信息
+            </summary>
+            <typeparam name="T">返回对象类型</typeparam>
+            <param name="result">返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspError(CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            错误回调
+            </summary>
+            <param name="pRspInfo"></param>
+            <param name="nRequestID"></param>
+            <param name="bIsLast"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnConnected">
+            <summary>
+            连接成功回调
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnDisconnected(System.Int32)">
+            <summary>
+            断开连接回调
+            </summary>
+            <param name="reason">原因</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspUserLogin(CTPTradeApi.CThostFtdcRspUserLoginField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            登录回调
+            </summary>
+            <param name="pRspUserLogin">登录返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspUserLogout(CTPTradeApi.CThostFtdcUserLogoutField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            登出回调
+            </summary>
+            <param name="pUserLogout">登出返回结果</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspUserPasswordUpdate(CTPTradeApi.CThostFtdcUserPasswordUpdateField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            更新用户口令
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRtnOrder(CTPTradeApi.CThostFtdcOrderField@)">
+            <summary>
+            报单通知
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRtnTrade(CTPTradeApi.CThostFtdcTradeField@)">
+            <summary>
+            成交回报
+            </summary>
+            <param name="pTrade">成交信息</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspOrderInsert(CTPTradeApi.CThostFtdcInputOrderField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            报单错误回调
+            </summary>
+            <param name="pInputOrder">报单信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspOrderAction(CTPTradeApi.CThostFtdcInputOrderActionField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            撤单回调
+            </summary>
+            <param name="pInputOrderAction">撤单信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryOrder(CTPTradeApi.CThostFtdcOrderField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询报单回调
+            </summary>
+            <param name="pOrder">委托信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryTrade(CTPTradeApi.CThostFtdcTradeField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询成交回调
+            </summary>
+            <param name="pTrade">成交信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryTradingAccount(CTPTradeApi.CThostFtdcTradingAccountField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询资金账户
+            </summary>
+            <param name="pTradingAccount">资金账户信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryInvestorPosition(CTPTradeApi.CThostFtdcInvestorPositionField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询持仓
+            </summary>
+            <param name="pInvestorPosition">持仓信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspParkedOrderInsert(CTPTradeApi.CThostFtdcParkedOrderField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            预埋报单回调
+            </summary>
+            <param name="pParkedOrder">预埋单委托信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspParkedOrderAction(CTPTradeApi.CThostFtdcParkedOrderActionField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            预埋撤单回调
+            </summary>
+            <param name="pParkedOrderAction">预埋单撤单信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspSettlementInfoConfirm(CTPTradeApi.CThostFtdcSettlementInfoConfirmField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            结算确认回调
+            </summary>
+            <param name="pSettlementInfoConfirm"></param>
+            <param name="pRspInfo"></param>
+            <param name="nRequestID"></param>
+            <param name="bIsLast"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryParkedOrder(CTPTradeApi.CThostFtdcParkedOrderField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询预埋单回调
+            </summary>
+            <param name="pParkedOrder">预埋单委托信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryParkedOrderAction(CTPTradeApi.CThostFtdcParkedOrderActionField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询预埋单撤单回调
+            </summary>
+            <param name="pParkedOrderAction">预埋单撤单委托信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryInstrument(CTPTradeApi.CThostFtdcInstrumentField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询合约列表回调
+            </summary>
+            <param name="pInstrument">合约信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryInvestor(CTPTradeApi.CThostFtdcInvestorField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询投资者
+            </summary>
+            <param name="pInvestor">投资者信息</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryInvestorPositionDetail(CTPTradeApi.CThostFtdcInvestorPositionDetailField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询投资者持仓明细
+            </summary>
+            <param name="pInvestorPositionDetail">持仓明细</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQueryNotice(CTPTradeApi.CThostFtdcNoticeField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询客户通知
+            </summary>
+            <param name="pNotice">客户通知</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQrySettlementInfo(CTPTradeApi.CThostFtdcSettlementInfoField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询结算结果回调
+            </summary>
+            <param name="pSettlementInfo">结算结果</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.OnRspQrySettlementInfoConfirm(CTPTradeApi.CThostFtdcSettlementInfoConfirmField@,CTPTradeApi.CThostFtdcRspInfoField@,System.Int32,System.Byte)">
+            <summary>
+            查询结算信息确认回调
+            </summary>
+            <param name="pSettlementInfoConfirm">结算信息确认</param>
+            <param name="pRspInfo">错误信息</param>
+            <param name="nRequestID">请求编号</param>
+            <param name="bIsLast">是否为最后一条数据</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToDirectionType(CTPTradeAdapter.Model.DirectionType)">
+            <summary>
+            买卖方向类型转换
+            </summary>
+            <param name="direction">买卖方向</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToOrderPriceType(CTPTradeAdapter.Model.OrderPriceType)">
+            <summary>
+            报单价格类型转换
+            </summary>
+            <param name="orderPriceType">报单价格类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToCombOffsetFlag(CTPTradeAdapter.Model.OpenCloseFlag)">
+            <summary>
+            组合开平仓标志类型转换
+            </summary>
+            <param name="openCloseFlag">开平仓标志</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToCombHedgeFlag(CTPTradeAdapter.Model.HedgeFlag)">
+            <summary>
+            投机套保标志类型转换
+            </summary>
+            <param name="hedgeFlag">投机套保标志</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToVolumeCondition(CTPTradeAdapter.Model.VolumeConditionType)">
+            <summary>
+            成交量类型转换
+            </summary>
+            <param name="volumeCondition">成交量类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToActionFlag(CTPTradeAdapter.Model.ActionFlag)">
+            <summary>
+            操作标志类型转换
+            </summary>
+            <param name="actionFlag">操作标志</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToContingentCondition(CTPTradeAdapter.Model.ContingentConditionType)">
+            <summary>
+            触发条件类型转换
+            </summary>
+            <param name="contingentCondition">触发条件类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedOrderStatus(CTPTradeAdapter.Model.ParkedOrderStatusType)">
+            <summary>
+            预埋单状态转换
+            </summary>
+            <param name="status"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToTimeCondition(CTPTradeAdapter.Model.TimeConditionType)">
+            <summary>
+            有效期类型转换
+            </summary>
+            <param name="timeCondition"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToForceCloseReason(CTPTradeAdapter.Model.ForceCloseReasonType)">
+            <summary>
+            强平原因类型转换
+            </summary>
+            <param name="forceCloseReason"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInputOrderField(CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            报单转换
+            </summary>
+            <param name="parameter">报单参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInputOrderActionField(CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            撤单转换
+            </summary>
+            <param name="parameter">撤单参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedOrderField(CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            预埋单转换
+            </summary>
+            <param name="parameter">报单参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedOrderActionField(CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            预埋撤单转换
+            </summary>
+            <param name="parameter">预埋单撤单参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToDirectionType(CTPTradeApi.TThostFtdcDirectionType)">
+            <summary>
+            买卖方向类型转换
+            </summary>
+            <param name="direction">买卖方向</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToOpenCloseFlag(CTPTradeApi.TThostFtdcOffsetFlagType)">
+            <summary>
+            开平仓标志转换
+            </summary>
+            <param name="offsetFlag">开平仓标志</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToHedgeFlag(CTPTradeApi.TThostFtdcHedgeFlagType)">
+            <summary>
+            投机套保标志转换
+            </summary>
+            <param name="hedgeFlag">投机套保标志</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToTradeType(CTPTradeApi.TThostFtdcTradeTypeType)">
+            <summary>
+            成交类型转换
+            </summary>
+            <param name="tradeType">成交类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToPriceSource(CTPTradeApi.TThostFtdcPriceSourceType)">
+            <summary>
+            成交价来源类型转换
+            </summary>
+            <param name="priceSource">成交价来源类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToOrderStatus(CTPTradeApi.TThostFtdcOrderStatusType)">
+            <summary>
+            报单状态类型转换
+            </summary>
+            <param name="orderStatus">报单状态类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToOrderPriceType(CTPTradeApi.TThostFtdcOrderPriceTypeType)">
+            <summary>
+            报单价格类型转换
+            </summary>
+            <param name="priceType">报单价格类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedOrderStatus(CTPTradeApi.TThostFtdcParkedOrderStatusType)">
+            <summary>
+            预埋单状态转换
+            </summary>
+            <param name="status">预埋单状态</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToPositionDirection(CTPTradeApi.TThostFtdcPosiDirectionType)">
+            <summary>
+            持仓多空头方向类型转换
+            </summary>
+            <param name="posiDirection">持仓多空头方向类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToPositionDate(CTPTradeApi.TThostFtdcPositionDateType)">
+            <summary>
+            持仓日期类型转换
+            </summary>
+            <param name="positionDate">持仓日期类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInstrumentProductClass(CTPTradeApi.TThostFtdcProductClassType)">
+            <summary>
+            合约产品类型转换
+            </summary>
+            <param name="productClass">合约产品类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInstrumentLifePhase(CTPTradeApi.TThostFtdcInstLifePhaseType)">
+            <summary>
+            合约生命周期状态类型转换
+            </summary>
+            <param name="lifePhase"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToIdCardTypeType(CTPTradeApi.TThostFtdcIdCardTypeType)">
+            <summary>
+            证件类型转换
+            </summary>
+            <param name="idCardType">持仓多空头方向类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToOrder(CTPTradeApi.CThostFtdcOrderField)">
+            <summary>
+            报单类型转换
+            </summary>
+            <param name="pOrder">报单结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToTrade(CTPTradeApi.CThostFtdcTradeField)">
+            <summary>
+            成交类型转换
+            </summary>
+            <param name="pTrade">成交结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToAccount(CTPTradeApi.CThostFtdcTradingAccountField)">
+            <summary>
+            资金账号转换
+            </summary>
+            <param name="pTradingAccount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInvestor(CTPTradeApi.CThostFtdcInvestorField)">
+            <summary>
+            投资者账号转换
+            </summary>
+            <param name="pInvestor"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToPosition(CTPTradeApi.CThostFtdcInvestorPositionField)">
+            <summary>
+            持仓信息转换
+            </summary>
+            <param name="pInvestorPosition">持仓结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedOrder(CTPTradeApi.CThostFtdcParkedOrderField)">
+            <summary>
+            预埋单类型转换
+            </summary>
+            <param name="pParkedOrder">预埋单结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToParkedCancelOrder(CTPTradeApi.CThostFtdcParkedOrderActionField)">
+            <summary>
+            预埋单撤单类型转换
+            </summary>
+            <param name="pParkedOrderAction">预埋单撤单结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToInstrumentInfo(CTPTradeApi.CThostFtdcInstrumentField)">
+            <summary>
+            合约类型转换
+            </summary>
+            <param name="pInstrument"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToPositionDetailInfo(CTPTradeApi.CThostFtdcInvestorPositionDetailField)">
+            <summary>
+            投资者持仓明细转换
+            </summary>
+            <param name="pInvestorPositionDetail">持仓明细结构体</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Adapter.TradeAdapter.ConvertToNoticeInfo(CTPTradeApi.CThostFtdcNoticeField)">
+            <summary>
+            客户通知转换
+            </summary>
+            <param name="pNotice">客户通知结构体</param>
+            <returns></returns>
+        </member>
+        <member name="T:CTPTradeAdapter.OrderReturnHandler">
+            <summary>
+            委托报单返回事件
+            </summary>
+            <param name="order">委托信息</param>
+        </member>
+        <member name="T:CTPTradeAdapter.TradeReturnHandler">
+            <summary>
+            成交回报事件
+            </summary>
+            <param name="trade">成交信息</param>
+        </member>
+        <member name="T:CTPTradeAdapter.Interface.ITradeApi">
+            <summary>
+            交易接口
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.Connect(CTPCore.DataCallback,System.String,System.String)">
+            <summary>
+            连接服务器
+            </summary>
+            <param name="callback">连接服务器回调</param>
+            <param name="brokerID">经纪商代码</param>
+            <param name="frondAddress">前置服务器地址</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.Disconnect(CTPCore.DataCallback)">
+            <summary>
+            断开连接
+            </summary>
+            <param name="callback">断开连接回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.UserLogin(CTPCore.DataCallback,System.String,System.String,System.Boolean)">
+            <summary>
+            用户登录
+            </summary>
+            <param name="callback">登录回调</param>
+            <param name="investorID">投资者账号</param>
+            <param name="password">密码</param>
+            <param name="isSafe">是否使用安全接口</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.UserLogout(CTPCore.DataCallback)">
+            <summary>
+            用户登出
+            </summary>
+            <param name="callback">登出回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.GetTradingDay">
+            <summary>
+            获取交易日
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.UpdateUserPassword(CTPCore.DataCallback,System.String,System.String,System.Boolean)">
+            <summary>
+            更新用户口令
+            </summary>
+            <param name="callback">更新回调</param>
+            <param name="oldPassword">原密码</param>
+            <param name="newPassword">新密码</param>
+            <param name="isSafe">是否使用安全接口</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.InsertOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.OrderInfo},CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            报单
+            </summary>
+            <param name="callback">报单回调</param>
+            <param name="parameter">报单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.CancelOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.OrderInfo},CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            撤单
+            </summary>
+            <param name="callback">撤单回调</param>
+            <param name="parameter">撤单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.InsertParkedOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.ParkedOrderInfo},CTPTradeAdapter.Model.OrderParameter)">
+            <summary>
+            预埋单录入
+            </summary>
+            <param name="callback">报单回调</param>
+            <param name="parameter">预埋单参数</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.CancelParkedOrder(CTPCore.DataCallback{CTPTradeAdapter.Model.ParkedOrderInfo},CTPTradeAdapter.Model.CancelOrderParameter)">
+            <summary>
+            预埋撤单
+            </summary>
+            <param name="callback">撤单回调</param>
+            <param name="parameter"></param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.SettlementInfoConfirm(CTPCore.DataCallback)">
+            <summary>
+            确认结算结果
+            </summary>
+            <param name="callback">结果回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryOrder(CTPCore.DataListCallback{CTPTradeAdapter.Model.OrderInfo})">
+            <summary>
+            查询当日委托
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryTrade(CTPCore.DataListCallback{CTPTradeAdapter.Model.TradeInfo})">
+            <summary>
+            查询当日成交
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryAccount(CTPCore.DataCallback{CTPTradeAdapter.Model.AccountInfo})">
+            <summary>
+            查询资金账户
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryPosition(CTPCore.DataListCallback{CTPTradeAdapter.Model.PositionInfo})">
+            <summary>
+            查询持仓
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryParkedOrder(CTPCore.DataListCallback{CTPTradeAdapter.Model.ParkedOrderInfo})">
+            <summary>
+            查询预埋单
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryParkedOrderAction(CTPCore.DataListCallback{CTPTradeAdapter.Model.ParkedCanelOrderInfo})">
+            <summary>
+            查询预埋撤单
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryInstrument(CTPCore.DataListCallback{CTPTradeAdapter.Model.InstrumentInfo},System.String)">
+            <summary>
+            查询合约列表
+            </summary>
+            <param name="callback"></param>
+            <param name="instrumentID">指定合约，null查询所有</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryInvestor(CTPCore.DataCallback{CTPTradeAdapter.Model.InvestorInfo})">
+            <summary>
+            查询投资者
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryInvestorPositionDetail(CTPCore.DataListCallback{CTPTradeAdapter.Model.PositionDetailInfo},System.String)">
+            <summary>
+            查询投资者持仓明细
+            </summary>
+            <param name="callback">查询回调</param>
+            <param name="instrumentID">合约代码:不填-查所有</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QueryNotice(CTPCore.DataListCallback{CTPTradeAdapter.Model.NoticeInfo})">
+            <summary>
+            请求查询客户通知
+            </summary>
+            <param name="callback">查询回调</param>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QuerySettlementInfo(CTPCore.DataCallback)">
+            <summary>
+            查询结算结果
+            </summary>
+            <param name="callback">查询回调</param>
+            <returns></returns>
+        </member>
+        <member name="M:CTPTradeAdapter.Interface.ITradeApi.QuerySettlementInfoConfirm(CTPCore.DataCallback)">
+            <summary>
+            查询结算信息确认
+            </summary>
+            <param name="callback">查询回调</param>
+            <returns></returns>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.AccountInfo">
+            <summary>
+            账户信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.TradingDay">
+            <summary>
+            交易日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.LoginTime">
+            <summary>
+            登录成功时间
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.BrokerID">
+            <summary>
+            经纪公司代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.InvestorID">
+            <summary>
+            投资者账号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PreMortgage">
+            <summary>
+            上次质押金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PreCredit">
+            <summary>
+            上次信用额度
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PreDeposit">
+            <summary>
+            上次存款额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PreBalance">
+            <summary>
+            上次结算准备金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PreMargin">
+            <summary>
+            上次占用的保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.InterestBase">
+            <summary>
+            利息基数
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Interest">
+            <summary>
+            利息收入
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Deposit">
+            <summary>
+            入金金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Withdraw">
+            <summary>
+            出金金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.FrozenMargin">
+            <summary>
+            冻结的保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.FrozenCash">
+            <summary>
+            冻结的资金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.FrozenCommission">
+            <summary>
+            冻结的手续费
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.TotalMargin">
+            <summary>
+            当前保证金总额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.CashIn">
+            <summary>
+            资金差额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Commission">
+            <summary>
+            手续费
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.CloseProfit">
+            <summary>
+            平仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.PositionProfit">
+            <summary>
+            持仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Balance">
+            <summary>
+            期货结算准备金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Available">
+            <summary>
+            可用资金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.WithdrawQuota">
+            <summary>
+            可取资金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Reserve">
+            <summary>
+            基本准备金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.SettlementID">
+            <summary>
+            结算编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Credit">
+            <summary>
+            信用额度
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.Mortgage">
+            <summary>
+            质押金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.ExchangeMargin">
+            <summary>
+            交易所保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.DeliveryMargin">
+            <summary>
+            投资者交割保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.ExchangeDeliveryMargin">
+            <summary>
+            交易所交割保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.AccountInfo.ReserveBalance">
+            <summary>
+            保底期货结算准备金
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ContingentConditionType">
+            <summary>
+            触发条件类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.Immediately">
+            <summary>
+            立即
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.Touch">
+            <summary>
+            止损
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.TouchProfit">
+            <summary>
+            止赢
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.ParkedOrder">
+            <summary>
+            预埋单
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.LastPriceGreaterThanStopPrice">
+            <summary>
+            最新价大于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.LastPriceGreaterEqualStopPrice">
+            <summary>
+            最新价大于等于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.LastPriceLesserThanStopPrice">
+            <summary>
+            最新价小于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.LastPriceLesserEqualStopPrice">
+            <summary>
+            最新价小于等于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.AskPriceGreaterThanStopPrice">
+            <summary>
+            卖一价大于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.AskPriceGreaterEqualStopPrice">
+            <summary>
+            卖一价大于等于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.AskPriceLesserThanStopPrice">
+            <summary>
+            卖一价小于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.AskPriceLesserEqualStopPrice">
+            <summary>
+            卖一价小于等于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.BidPriceGreaterThanStopPrice">
+            <summary>
+            买一价大于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.BidPriceGreaterEqualStopPrice">
+            <summary>
+            买一价大于等于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.BidPriceLesserThanStopPrice">
+            <summary>
+            买一价小于条件价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ContingentConditionType.BidPriceLesserEqualStopPrice">
+            <summary>
+            买一价小于等于条件价
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ActionFlag">
+            <summary>
+            操作标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ActionFlag.Delete">
+            <summary>
+            删除
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ActionFlag.Modify">
+            <summary>
+            修改
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.DirectionType">
+            <summary>
+            买卖类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.DirectionType.Buy">
+            <summary>
+            买
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.DirectionType.Sell">
+            <summary>
+            卖
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ForceCloseReasonType">
+            <summary>
+            强平原因类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.NotForceClose">
+            <summary>
+            非强平
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.LackDeposit">
+            <summary>
+            资金不足
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.ClientOverPositionLimit">
+            <summary>
+            客户超仓
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.MemberOverPositionLimit">
+            <summary>
+            会员超仓
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.NotMultiple">
+            <summary>
+            持仓非整数倍
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.Violation">
+            <summary>
+            违规
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.Other">
+            <summary>
+            其它
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ForceCloseReasonType.PersonDeliv">
+            <summary>
+            自然人临近交割
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.HedgeFlag.Speculation">
+            <summary>
+            投机
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.HedgeFlag.Arbitrage">
+            <summary>
+            套利
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.HedgeFlag.Hedge">
+            <summary>
+            套保
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.IdCardType">
+            <summary>
+            证件类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.EID">
+            <summary>
+            组织机构代码
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.IDCard">
+            <summary>
+            身份证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.OfficerIDCard">
+            <summary>
+            军官证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.PoliceIDCard">
+            <summary>
+            警官证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.SoldierIDCard">
+            <summary>
+            士兵证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.HouseholdRegister">
+            <summary>
+            户口簿
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.Passport">
+            <summary>
+            护照
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.TaiwanCompatriotIDCard">
+            <summary>
+            台胞证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.HomeComingCard">
+            <summary>
+            回乡证
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.LicenseNo">
+            <summary>
+            营业执照号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.TaxNo">
+            <summary>
+            税务登记号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.IdCardType.OtherCard">
+            <summary>
+            其他证件
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.InstrumentLifePhaseType">
+            <summary>
+            合约生命周期状态
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentLifePhaseType.NotStart">
+            <summary>
+            未上市
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentLifePhaseType.Started">
+            <summary>
+            上市
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentLifePhaseType.Pause">
+            <summary>
+            停牌
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentLifePhaseType.Expired">
+            <summary>
+            到期
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.OrderStatusType">
+            <summary>
+            报单状态类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.AllTraded">
+            <summary>
+            全部成交
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.PartTradedQueueing">
+            <summary>
+            部分成交还在队列中
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.PartTradedNotQueueing">
+            <summary>
+            部分成交不在队列中
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.NoTradeQueueing">
+            <summary>
+            未成交还在队列中
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.NoTradeNotQueueing">
+            <summary>
+            未成交不在队列中
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.Canceled">
+            <summary>
+            撤单
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.Unknown">
+            <summary>
+            未知
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.NotTouched">
+            <summary>
+            尚未触发
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderStatusType.Touched">
+            <summary>
+            已触发
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.PositionDateType">
+            <summary>
+            持仓日期类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PositionDateType.Today">
+            <summary>
+            今日持仓
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PositionDateType.History">
+            <summary>
+            历史持仓
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.PositionDirectionType">
+            <summary>
+            持仓多空方向类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PositionDirectionType.Net">
+            <summary>
+            净
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PositionDirectionType.Long">
+            <summary>
+            多头
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PositionDirectionType.Short">
+            <summary>
+            空头
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.PriceSourceType">
+            <summary>
+            成交价来源类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PriceSourceType.LastPrice">
+            <summary>
+            前成交价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PriceSourceType.Buy">
+            <summary>
+            买委托价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.PriceSourceType.Sell">
+            <summary>
+            卖委托价
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.InstrumentProductClassType">
+            <summary>
+            合约产品类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentProductClassType.Futures">
+            <summary>
+            期货
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentProductClassType.Options">
+            <summary>
+            期权
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentProductClassType.Combination">
+            <summary>
+            组合
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentProductClassType.Spot">
+            <summary>
+            即期
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.InstrumentProductClassType.EFP">
+            <summary>
+            期转现
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.TradeType">
+            <summary>
+            成交类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeType.Common">
+            <summary>
+            普通成交
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeType.OptionsExecution">
+            <summary>
+            期权执行
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeType.OTC">
+            <summary>
+            OTC成交
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeType.EFPDerived">
+            <summary>
+            期转现衍生成交
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeType.CombinationDerived">
+            <summary>
+            组合衍生成交
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.CancelOrderParameter">
+            <summary>
+            撤单参数类
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.OrderActionRef">
+            <summary>
+            报单操作引用
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.OrderSysID">
+            <summary>
+            报单编号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.ActionFlag">
+            <summary>
+            操作标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.Quantity">
+            <summary>
+            报单数量
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.Price">
+            <summary>
+            报单价格
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.ParkedOrderActionID">
+            <summary>
+            预埋撤单编号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.CancelOrderParameter.Status">
+            <summary>
+            预埋单状态
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Model.CancelOrderParameter.#ctor">
+            <summary>
+            撤单参数构造函数
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.OpenCloseFlag">
+            <summary>
+            开平仓标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.Open">
+            <summary>
+            开仓
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.Close">
+            <summary>
+            平仓
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.ForceClose">
+            <summary>
+            强平
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.CloseToday">
+            <summary>
+            平今
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.CloseYesterday">
+            <summary>
+            平昨
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.ForceOff">
+            <summary>
+            强减
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OpenCloseFlag.LocalForceClose">
+            <summary>
+            本地强平
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.InstrumentInfo">
+            <summary>
+            合约信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.InstrumentName">
+            <summary>
+            合约名称
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.ProductID">
+            <summary>
+            产品代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.ProductType">
+            <summary>
+            产品类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.MaxMarketOrderVolume">
+            <summary>
+            市价单最大下单量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.MinMarketOrderVolume">
+            <summary>
+            市价单最小下单量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.MaxLimitOrderVolume">
+            <summary>
+            限价单最大下单量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.MinLimitOrderVolume">
+            <summary>
+            限价单最小下单量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.VolumeMultiple">
+            <summary>
+            合约数量乘数
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.PriceTick">
+            <summary>
+            最小变动价位
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.CreateDate">
+            <summary>
+            创建日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.OpenDate">
+            <summary>
+            上市日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.ExpireDate">
+            <summary>
+            到期日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.StartDelivDate">
+            <summary>
+            开始交割日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.EndDelivDate">
+            <summary>
+            结束交割日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.LifePhaseType">
+            <summary>
+            合约生命周期状态
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.LongMarginRatio">
+            <summary>
+            多头保证金率
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InstrumentInfo.ShortMarginRatio">
+            <summary>
+            空头保证金率
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.InvestorInfo">
+            <summary>
+            投资者信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.InvestorID">
+            <summary>
+            投资者代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.BrokerID">
+            <summary>
+            经纪公司代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.InvestorGroupID">
+            <summary>
+            投资者分组代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.InvestorName">
+            <summary>
+            投资者名称
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.IdentifiedCardType">
+            <summary>
+            证件类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.IdentifiedCardNo">
+            <summary>
+            证件号码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.IsActive">
+            <summary>
+            是否活跃
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.Telephone">
+            <summary>
+            联系电话
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.Address">
+            <summary>
+            通讯地址
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.OpenDate">
+            <summary>
+            开户日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.Mobile">
+            <summary>
+            手机
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.CommModelID">
+            <summary>
+            手续费率模板代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.InvestorInfo.MarginModelID">
+            <summary>
+            保证金率模板代码
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.NoticeInfo">
+            <summary>
+            客户通知
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.NoticeInfo.ID">
+            <summary>
+            经纪公司通知内容序列号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.NoticeInfo.BrokerID">
+            <summary>
+            经纪公司代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.NoticeInfo.Content">
+            <summary>
+            消息正文
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.OrderInfo">
+            <summary>
+            委托信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.InvestorID">
+            <summary>
+            投资者ID
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderSysID">
+            <summary>
+            报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderLocalID">
+            <summary>
+            本地报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.Direction">
+            <summary>
+            买卖类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderPrice">
+            <summary>
+            报单价格
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderQuantity">
+            <summary>
+            报单数量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderStatus">
+            <summary>
+            报单状态
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.StatusMessage">
+            <summary>
+            状态信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderDate">
+            <summary>
+            报单日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.OrderTime">
+            <summary>
+            报单时间
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.OrderInfo.SequenceNo">
+            <summary>
+            序号
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.OrderParameter">
+            <summary>
+            报单参数类
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.Direction">
+            <summary>
+            买卖方向
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.Quantity">
+            <summary>
+            报单数量
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.Price">
+            <summary>
+            报单价格
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.StopPrice">
+            <summary>
+            止损价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.PriceType">
+            <summary>
+            报单价格类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.OpenCloseFlag">
+            <summary>
+            开平仓标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.TimeCondition">
+            <summary>
+            有效期类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.GTDDate">
+            <summary>
+            GTD日期
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.MinVolume">
+            <summary>
+            最小成交量
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.VolumeCondition">
+            <summary>
+            成交量类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.ContingentCondition">
+            <summary>
+            触发条件
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.ForceCloseReason">
+            <summary>
+            强平原因
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.UserForceClose">
+            <summary>
+            用户强评标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.IsAutoSuspend">
+            <summary>
+            自动挂起标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderParameter.ParkedOrderID">
+            <summary>
+            预埋报单编号
+            </summary>
+        </member>
+        <member name="M:CTPTradeAdapter.Model.OrderParameter.#ctor">
+            <summary>
+            报单参数构造函数
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.OrderPriceType">
+            <summary>
+            报单价格类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderPriceType.AnyPrice">
+            <summary>
+            任意价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderPriceType.LimitPrice">
+            <summary>
+            限价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderPriceType.BestPrice">
+            <summary>
+            最优价
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.OrderPriceType.LastPrice">
+            <summary>
+            最新价
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ParkedCanelOrderInfo">
+            <summary>
+            预埋单撤单信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.InvestorID">
+            <summary>
+            投资者ID
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.OrderActionRef">
+            <summary>
+            报单操作引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.OrderSysID">
+            <summary>
+            报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedCanelOrderInfo.ParkedOrderActionID">
+            <summary>
+            预埋撤单单编号
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ParkedCanelOrderInfo.Status">
+            <summary>
+            预埋撤单状态
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ParkedOrderInfo">
+            <summary>
+            预埋单信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.InvestorID">
+            <summary>
+            投资者ID
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.OrderActionRef">
+            <summary>
+            报单操作引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.OrderSysID">
+            <summary>
+            报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.ActionFlag">
+            <summary>
+            操作标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.Direction">
+            <summary>
+            买卖类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.PriceType">
+            <summary>
+            报单价格类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.OpenCloseFlag">
+            <summary>
+            开平仓标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.Quantity">
+            <summary>
+            报单数量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.Price">
+            <summary>
+            报单价格
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.ParkedOrderID">
+            <summary>
+            预埋报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.ParkedOrderActionID">
+            <summary>
+            预埋撤单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.ParkedOrderInfo.Status">
+            <summary>
+            预埋单状态
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.ParkedOrderStatusType">
+            <summary>
+            预埋单状态
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ParkedOrderStatusType.NotSend">
+            <summary>
+            未发送
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ParkedOrderStatusType.Send">
+            <summary>
+            已发送
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.ParkedOrderStatusType.Deleted">
+            <summary>
+            已删除
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.PositionDetailInfo">
+            <summary>
+            持仓信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.BrokerID">
+            <summary>
+            经纪公司代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.InvestorID">
+            <summary>
+            投资者代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.Direction">
+            <summary>
+            买卖
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.OpenDate">
+            <summary>
+            开仓日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.TradeID">
+            <summary>
+            成交编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.Volume">
+            <summary>
+            数量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.OpenPrice">
+            <summary>
+            开仓价
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.TradingDay">
+            <summary>
+            交易日
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.SettlementID">
+            <summary>
+            结算编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.TradeType">
+            <summary>
+            成交类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.CombInstrumentID">
+            <summary>
+            组合合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.CloseProfitByDate">
+            <summary>
+            逐日盯市平仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.CloseProfitByTrade">
+            <summary>
+            逐笔对冲平仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.PositionProfitByDate">
+            <summary>
+            逐日盯市持仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.PositionProfitByTrade">
+            <summary>
+            逐笔对冲持仓盈亏
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.Margin">
+            <summary>
+            投资者保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.ExchangeMargin">
+            <summary>
+            交易所保证金
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.MarginRateByMoney">
+            <summary>
+            保证金率
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.MarginRateByVolume">
+            <summary>
+            保证金率(按手数)
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.LastSettlementPrice">
+            <summary>
+            昨结算价
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.SettlementPrice">
+            <summary>
+            结算价
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.CloseVolume">
+            <summary>
+            平仓量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionDetailInfo.CloseAmount">
+            <summary>
+            平仓金额
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.PositionInfo">
+            <summary>
+            持仓信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.BrokerID">
+            <summary>
+            经纪公司代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.InvestorID">
+            <summary>
+            投资者ID
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.PositionDirection">
+            <summary>
+            持仓多空方向
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.PositionDate">
+            <summary>
+            持仓日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.CreatedOn">
+            <summary>
+            创建日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.PrePosition">
+            <summary>
+            昨日持仓
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.Position">
+            <summary>
+            今日持仓
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.LongFrozen">
+            <summary>
+            多头冻结
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.ShortFrozen">
+            <summary>
+            空头冻结
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.LongFrozenAmount">
+            <summary>
+            开仓冻结金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.ShortFrozenAmount">
+            <summary>
+            开仓冻结金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.OpenVolume">
+            <summary>
+            开仓量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.CloseVolume">
+            <summary>
+            平仓量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.OpenAmount">
+            <summary>
+            开仓金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.CloseAmount">
+            <summary>
+            平仓金额
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.PositionCost">
+            <summary>
+            持仓成本
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.Commission">
+            <summary>
+            手续费
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.PositionInfo.PositionProfit">
+            <summary>
+            持仓盈亏
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.TimeConditionType">
+            <summary>
+            有效期类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.IOC">
+            <summary>
+            立即完成，否则撤销
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.GFS">
+            <summary>
+            本节有效
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.GFD">
+            <summary>
+            当日有效
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.GTD">
+            <summary>
+            指定日期前有效
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.GTC">
+            <summary>
+            撤销前有效
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TimeConditionType.GFA">
+            <summary>
+            集合竞价有效
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.TradeInfo">
+            <summary>
+            成交信息
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.InvestorID">
+            <summary>
+            投资者ID
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.InstrumentID">
+            <summary>
+            合约代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.ExchangeID">
+            <summary>
+            交易所代码
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.OrderRef">
+            <summary>
+            报单引用
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.OrderSysID">
+            <summary>
+            报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.OrderLocalID">
+            <summary>
+            本地报单编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradeID">
+            <summary>
+            成交编号
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.Direction">
+            <summary>
+            买卖类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeInfo.OpenCloseFlag">
+            <summary>
+            开平仓标志
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.TradeInfo.HedgeFlag">
+            <summary>
+            投机套保标志
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradePrice">
+            <summary>
+            成交价格
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradeQuantity">
+            <summary>
+            成交数量
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradeDate">
+            <summary>
+            成交日期
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradeTime">
+            <summary>
+            成交时间
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.TradeType">
+            <summary>
+            成交类型
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.PriceSource">
+            <summary>
+            成交价来源
+            </summary>
+        </member>
+        <member name="P:CTPTradeAdapter.Model.TradeInfo.SequenceNo">
+            <summary>
+            序号
+            </summary>
+        </member>
+        <member name="T:CTPTradeAdapter.Model.VolumeConditionType">
+            <summary>
+            成交量类型
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.VolumeConditionType.AV">
+            <summary>
+            任何数量
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.VolumeConditionType.MV">
+            <summary>
+            最小数量
+            </summary>
+        </member>
+        <member name="F:CTPTradeAdapter.Model.VolumeConditionType.CV">
+            <summary>
+            全部数量
+            </summary>
+        </member>
+    </members>
+</doc>
